@@ -1,48 +1,69 @@
 package com.example.week7;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.EditText;
-import android.view.inputmethod.EditorInfo;
 
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView text;
+    EditText text;
     TextInputEditText input;
     String temp;
+    Context context = null;
+    String fileName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        text = (TextView) findViewById(R.id.textView);
+        text = (EditText) findViewById(R.id.text);
         input = (TextInputEditText) findViewById(R.id.editText);
-        input.setOnEditorActionListener(editorListener);
+        context = MainActivity.this;
+        System.out.println(" TÄMÄ" + context.getFilesDir());
 
     }
 
-    public void print(View v){
-        temp = input.getText().toString();
-        text.setText(temp);
+    public void readFile(View v){
+        try{
+            InputStream streamIn = context.openFileInput(Objects.requireNonNull(input.getText()).toString());
 
-    }
-
-    private TextView.OnEditorActionListener editorListener = new TextView.OnEditorActionListener() {
-        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-            switch (actionId) {
-                case EditorInfo.IME_ACTION_SEND:
-                    temp = input.getText().toString();
-                    text.setText(temp);
-                    break;
+            BufferedReader br = new BufferedReader(new InputStreamReader(streamIn));
+            String s = "";
+            String s2 = "";
+            while((s=br.readLine()) != null) {
+                s2 = s2 + s + "\n";
             }
-            return false;
+            text.setText(s2);
+            br.close();
+
+        }catch(IOException e){
+            Log.e("IoException", "Error");
         }
-    };
+    }
+
+    public void writeFile (View v){
+        try{
+            OutputStreamWriter streamOut = new OutputStreamWriter(context.openFileOutput(input.getText().toString(), Context.MODE_PRIVATE));
+            String s = text.getText().toString();
+            streamOut.write(s);
+            streamOut.close();
+        }catch(IOException e){
+            Log.e("IoException", "Error");
+        }
+    }
+
 }
 
